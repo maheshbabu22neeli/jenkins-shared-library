@@ -40,6 +40,8 @@ def call(Map configMap) {
 
                         // Optionally, set it as a global environment variable
                         APP_VERSION = packageVersion
+
+                        sh 'printenv | sort'
                     }
                 }
             }
