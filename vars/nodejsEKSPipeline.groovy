@@ -160,19 +160,20 @@ def call(Map configMap) {
 
             stage('Push Image tp ECR') {
                 steps {
-                    try {
-                        withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
-                            sh """
+                    script {
+                        try {
+                            withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
+                                sh """
                                 aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
                                 docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${PROJECT}/${COMPONENT}:${APP_VERSION}
                             """
+                            }
+                            utils.updateCommitStatus('success', "Image ${APP_VERSION} pushed to ECR", 'push-image')
+                        } catch (err) {
+                            utils.updateCommitStatus('failure', 'Failed to push image to ECR', 'push-image')
+                            throw err
                         }
-                        utils.updateCommitStatus('success', "Image ${APP_VERSION} pushed to ECR", 'push-image')
-                    } catch (err) {
-                        utils.updateCommitStatus('failure', 'Failed to push image to ECR', 'push-image')
-                        throw err
                     }
-
                 }
             }
 
